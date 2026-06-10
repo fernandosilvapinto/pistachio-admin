@@ -9,6 +9,7 @@ import RoleList from '../pages/roles/RoleList';
 import ServiceList from '../pages/services/ServiceList';
 import SchedulingList from '../pages/schedulings/SchedulingList';
 import PaymentList from '../pages/payments/PaymentList';
+import NotFound from '../pages/NotFound';
 
 const AppRouter = () => {
   const { isAuthenticated } = useAuth();
@@ -35,7 +36,7 @@ const AppRouter = () => {
           <Route path="schedulings" element={<SchedulingList />} />
           <Route path="payments" element={<PaymentList />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

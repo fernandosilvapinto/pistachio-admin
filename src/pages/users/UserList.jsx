@@ -6,6 +6,7 @@ import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+import { useToast } from '../../context/ToastContext';
 
 const EMPTY_FORM = { name: '', email: '', password: '', roleId: '' };
 
@@ -17,6 +18,7 @@ const UserList = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const load = async () => {
     setLoading(true);
@@ -41,11 +43,12 @@ const UserList = () => {
   };
 
   const openEdit = (user) => {
+    const role = roles.find(r => r.name === user.role);
     setForm({
-      name:     user.name ?? '',
-      email:    user.email,
+      name: user.name ?? '',
+      email: user.email,
       password: '',
-      roleId:   user.roleId ?? '',
+      roleId: role?.id ?? '',
     });
     setError('');
     setModal({ type: 'edit', user });
@@ -60,15 +63,18 @@ const UserList = () => {
     try {
       if (modal === 'create') {
         await api.post('/users', form);
+        showToast('Utilizador criado com sucesso.');
       } else {
         const payload = { ...form };
         if (!payload.password) delete payload.password;
         await api.put(`/users/${modal.user.id}`, payload);
+        showToast('Utilizador atualizado com sucesso.');
       }
       setModal(null);
       load();
     } catch (e) {
       setError(e.message ?? 'Erro ao guardar.');
+      showToast('Erro ao guardar utilizador.', 'error');
     } finally {
       setSaving(false);
     }
@@ -76,22 +82,29 @@ const UserList = () => {
 
   const handleDelete = async (id) => {
     if (!confirm('Tens a certeza que queres eliminar este utilizador?')) return;
-    await api.delete(`/users/${id}`).catch(() => {});
-    load();
+    try {
+      await api.delete(`/users/${id}`);
+      showToast('Utilizador eliminado.');
+      load();
+    } catch {
+      showToast('Erro ao eliminar utilizador.', 'error');
+    }
   };
 
   const getRoleName = (roleId) => roles.find(r => r.id === roleId)?.name ?? '—';
 
   const cols = [
-    { key: 'email',  label: 'Email' },
-    { key: 'name',   label: 'Nome',  render: r => r.name ?? '—' },
+    { key: 'email', label: 'Email' },
+    { key: 'name', label: 'Nome', render: r => r.name ?? '—' },
     { key: 'role', label: 'Perfil', render: r => <Badge label={r.role ?? '—'} /> },
-    { key: 'actions', label: '', render: r => (
-      <div className="flex gap-2">
-        <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
-        <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
-      </div>
-    )},
+    {
+      key: 'actions', label: '', render: r => (
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
+          <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
+        </div>
+      )
+    },
   ];
 
   return (
