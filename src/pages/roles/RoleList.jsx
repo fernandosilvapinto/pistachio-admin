@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
@@ -8,6 +9,7 @@ import Input from '../../components/ui/Input';
 const EMPTY_FORM = { name: '' };
 
 const RoleList = () => {
+  const navigate = useNavigate();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
@@ -53,6 +55,7 @@ const RoleList = () => {
     { key: 'name',    label: 'Nome' },
     { key: 'actions', label: '', render: r => (
       <div className="flex gap-2">
+        <Button size="sm" onClick={() => navigate(`/roles/${r.id}`)}>Ver</Button>
         <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
         <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
       </div>

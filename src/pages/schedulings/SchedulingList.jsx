@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -11,7 +11,17 @@ const EMPTY_FORM = { scheduledDate: '', serviceId: '', userId: '' };
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT') : '—';
 
+const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+
+const STATUS_STYLES = {
+  Pending:   'bg-yellow-50 text-yellow-700 border-yellow-200',
+  Confirmed: 'bg-blue-50 text-blue-700 border-blue-200',
+  Completed: 'bg-green-50 text-green-700 border-green-200',
+  Cancelled: 'bg-red-50 text-red-700 border-red-200',
+};
+
 const SchedulingList = () => {
+  const navigate = useNavigate();
   const [schedulings, setSchedulings] = useState([]);
   const [services, setServices] = useState([]);
   const [users, setUsers] = useState([]);
@@ -70,6 +80,26 @@ const SchedulingList = () => {
     } finally { setSaving(false); }
   };
 
+  const handleStatusChange = async (id, status) => {
+    try {
+      await api.patch(`/schedulings/${id}/status`, { status });
+      load();
+    } catch (e) {
+      setError(e.message ?? 'Erro ao alterar estado.');
+    }
+  };
+
+  const handleMechanicChange = async (id, assignedMechanicId) => {
+    try {
+      await api.patch(`/schedulings/${id}/mechanic`, {
+        assignedMechanicId: assignedMechanicId ? parseInt(assignedMechanicId) : null,
+      });
+      load();
+    } catch (e) {
+      setError(e.message ?? 'Erro ao atribuir mecânico.');
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!confirm('Tens a certeza que queres eliminar este agendamento?')) return;
     await api.delete(`/schedulings/${id}`).catch(() => {});
@@ -78,6 +108,8 @@ const SchedulingList = () => {
 
   const getServiceName = (id) => services.find(s => s.id === id)?.name ?? '—';
   const getUserName    = (id) => users.find(u => u.id === id)?.name ?? '—';
+  const customers = users.filter(u => u.role === 'Customer');
+  const mechanics = users.filter(u => u.role === 'Mechanic');
 
   const FILTERS = ['Todos', 'Pending', 'Confirmed', 'Completed', 'Cancelled'];
   const filtered = filter === 'Todos'
@@ -89,9 +121,33 @@ const SchedulingList = () => {
     { key: 'scheduledDate', label: 'Data',       render: r => fmtDate(r.scheduledDate) },
     { key: 'userId',        label: 'Utilizador', render: r => getUserName(r.userId) },
     { key: 'serviceId',     label: 'Serviço',    render: r => getServiceName(r.serviceId) },
-    { key: 'status',        label: 'Estado',     render: r => r.status ? <Badge label={r.status} /> : '—' },
+    { key: 'status',        label: 'Estado',     render: r => (
+      <select
+        value={r.status}
+        onChange={e => handleStatusChange(r.id, e.target.value)}
+        onClick={e => e.stopPropagation()}
+        className={`text-xs font-medium rounded-full border pl-2 pr-1 py-0.5 outline-none cursor-pointer
+          ${STATUS_STYLES[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}
+      >
+        {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
+    )},
+    { key: 'mechanic', label: 'Mecânico', render: r => (
+      <select
+        value={r.assignedMechanicId ?? ''}
+        onChange={e => handleMechanicChange(r.id, e.target.value)}
+        onClick={e => e.stopPropagation()}
+        className="text-xs rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 outline-none cursor-pointer focus:border-blue-400"
+      >
+        <option value="">— sem atribuição —</option>
+        {mechanics.map(m => (
+          <option key={m.id} value={m.id}>{m.name}</option>
+        ))}
+      </select>
+    )},
     { key: 'actions', label: '', render: r => (
       <div className="flex gap-2">
+        <Button size="sm" onClick={() => navigate(`/schedulings/${r.id}`)}>Ver</Button>
         <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
         <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
       </div>
@@ -151,7 +207,7 @@ const SchedulingList = () => {
               onChange={e => setForm(f => ({ ...f, userId: e.target.value }))}
             >
               <option value="">— seleciona utilizador —</option>
-              {users.map(u => (
+              {customers.map(u => (
                 <option key={u.id} value={u.id}>{u.name ?? u.email}</option>
               ))}
             </Select>

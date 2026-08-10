@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
@@ -11,6 +12,7 @@ const EMPTY_FORM = { name: '', description: '', price: '', isActive: true, isFea
 const fmtEur = (n) => `€${Number(n ?? 0).toFixed(2)}`;
 
 const ServiceList = () => {
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
@@ -71,6 +73,7 @@ const ServiceList = () => {
     { key: 'isFeatured',  label: 'Destaque',   render: r => r.isFeatured ? '⭐' : '—' },
     { key: 'actions', label: '', render: r => (
       <div className="flex gap-2">
+        <Button size="sm" onClick={() => navigate(`/services/${r.id}`)}>Ver</Button>
         <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
         <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
       </div>

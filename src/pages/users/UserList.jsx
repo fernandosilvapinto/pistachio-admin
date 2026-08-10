@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
@@ -19,6 +20,7 @@ const UserList = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
@@ -100,6 +102,7 @@ const UserList = () => {
     {
       key: 'actions', label: '', render: r => (
         <div className="flex gap-2">
+          <Button size="sm" onClick={() => navigate(`/users/${r.id}`)}>Ver</Button>
           <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
           <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
         </div>

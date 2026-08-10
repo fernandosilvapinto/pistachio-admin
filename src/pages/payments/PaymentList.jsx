@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import Table from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
 
 const fmtEur  = (n) => `€${Number(n ?? 0).toFixed(2)}`;
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT') : '—';
@@ -14,6 +16,7 @@ const StatCard = ({ label, value }) => (
 );
 
 const PaymentList = () => {
+  const navigate = useNavigate();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +40,9 @@ const PaymentList = () => {
     { key: 'paymentDate', label: 'Data',        render: r => fmtDate(r.paymentDate) },
     { key: 'userId',      label: 'Utilizador',  render: r => r.user?.name ?? `#${r.userId}` },
     { key: 'serviceId',   label: 'Serviço',     render: r => r.service?.name ?? `#${r.serviceId}` },
+    { key: 'actions',     label: '',            render: r => (
+      <Button size="sm" onClick={() => navigate(`/payments/${r.id}`)}>Ver</Button>
+    )},
   ];
 
   return (
