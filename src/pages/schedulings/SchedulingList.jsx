@@ -89,14 +89,14 @@ const SchedulingList = () => {
     }
   };
 
-  const handleMechanicChange = async (id, assignedMechanicId) => {
+  const handleAssigneeChange = async (id, assigneeId) => {
     try {
-      await api.patch(`/schedulings/${id}/mechanic`, {
-        assignedMechanicId: assignedMechanicId ? parseInt(assignedMechanicId) : null,
+      await api.patch(`/schedulings/${id}/assignee`, {
+        assigneeId: assigneeId ? parseInt(assigneeId) : null,
       });
       load();
     } catch (e) {
-      setError(e.message ?? 'Erro ao atribuir mecânico.');
+      setError(e.message ?? 'Erro ao atribuir responsável.');
     }
   };
 
@@ -108,8 +108,10 @@ const SchedulingList = () => {
 
   const getServiceName = (id) => services.find(s => s.id === id)?.name ?? '—';
   const getUserName    = (id) => users.find(u => u.id === id)?.name ?? '—';
-  const customers = users.filter(u => u.role === 'Customer');
-  const mechanics = users.filter(u => u.role === 'Mechanic');
+  // Os papéis vivem no identity provider e não chegam nesta listagem,
+  // por isso qualquer pessoa registada pode ser cliente ou responsável.
+  const customers = users;
+  const staff = users;
 
   const FILTERS = ['Todos', 'Pending', 'Confirmed', 'Completed', 'Cancelled'];
   const filtered = filter === 'Todos'
@@ -132,16 +134,16 @@ const SchedulingList = () => {
         {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
     )},
-    { key: 'mechanic', label: 'Mecânico', render: r => (
+    { key: 'assignee', label: 'Responsável', render: r => (
       <select
-        value={r.assignedMechanicId ?? ''}
-        onChange={e => handleMechanicChange(r.id, e.target.value)}
+        value={r.assigneeId ?? ''}
+        onChange={e => handleAssigneeChange(r.id, e.target.value)}
         onClick={e => e.stopPropagation()}
         className="text-xs rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 outline-none cursor-pointer focus:border-blue-400"
       >
         <option value="">— sem atribuição —</option>
-        {mechanics.map(m => (
-          <option key={m.id} value={m.id}>{m.name}</option>
+        {staff.map(p => (
+          <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </select>
     )},

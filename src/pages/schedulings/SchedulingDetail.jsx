@@ -46,7 +46,7 @@ const SchedulingDetail = () => {
             </span>
           ),
         },
-        { label: 'Mecânico atribuído', value: scheduling.assignedMechanicName || 'Sem atribuição' },
+        { label: 'Responsável', value: scheduling.assigneeName || 'Sem atribuição' },
       ]}
     />
   );
