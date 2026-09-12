@@ -1,17 +1,22 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+// `permission` é o que a API exige para a página servir de alguma coisa. Uma
+// entrada sem permissão é escondida — não porque isso proteja o que quer que
+// seja, mas porque mostrar um menu que devolve 403 é uma promessa falsa.
 const NAV = [
-  { to: '/',            label: 'Dashboard',    icon: '📊' },
-  { to: '/users',       label: 'Utilizadores', icon: '👥' },
-  { to: '/roles',       label: 'Perfis',       icon: '🔑' },
-  { to: '/services',    label: 'Serviços',     icon: '🔧' },
-  { to: '/schedulings', label: 'Agendamentos', icon: '📅' },
-  { to: '/payments',    label: 'Pagamentos',   icon: '💶' },
+  { to: '/', label: 'Dashboard', icon: '📊', permission: null },
+  { to: '/users', label: 'Utilizadores', icon: '👥', permission: 'users:read' },
+  { to: '/services', label: 'Serviços', icon: '🔧', permission: 'services:read' },
+  { to: '/schedulings', label: 'Agendamentos', icon: '📅', permission: 'scheduling:read' },
+  { to: '/payments', label: 'Pagamentos', icon: '💶', permission: 'payments:read' },
 ];
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { profile, user, can, signOut } = useAuth();
+
+  const name = user?.name ?? profile?.name ?? profile?.preferred_username ?? 'Sessão';
+  const email = user?.email ?? profile?.email ?? '';
 
   return (
     <aside className="w-56 min-h-screen bg-white border-r border-gray-100 flex flex-col">
@@ -31,7 +36,7 @@ const Sidebar = () => {
 
       {/* Navegação */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-        {NAV.map(({ to, label, icon }) => (
+        {NAV.filter(({ permission }) => !permission || can(permission)).map(({ to, label, icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -51,9 +56,10 @@ const Sidebar = () => {
 
       {/* Utilizador */}
       <div className="px-5 py-4 border-t border-gray-100">
-        <p className="text-xs font-medium text-gray-700 truncate">{user?.email ?? 'Admin'}</p>
+        <p className="text-xs font-medium text-gray-700 truncate">{name}</p>
+        {email && <p className="text-xs text-gray-400 truncate">{email}</p>}
         <button
-          onClick={logout}
+          onClick={signOut}
           className="text-xs text-gray-400 hover:text-gray-600 mt-1 cursor-pointer"
         >
           Sair →

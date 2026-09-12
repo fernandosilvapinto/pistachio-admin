@@ -4,7 +4,7 @@ import { api } from '../../api/client';
 import DetailView from '../../components/ui/DetailView';
 import Badge from '../../components/ui/Badge';
 
-const fmtDateTime = (d) => d ? new Date(d).toLocaleString('pt-PT') : '—';
+const fmtDateTime = (d) => (d ? new Date(d).toLocaleString('pt-PT') : '—');
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -14,7 +14,8 @@ const UserDetail = () => {
 
   useEffect(() => {
     setLoading(true);
-    api.get(`/users/${id}`)
+    api
+      .get(`/users/${id}`)
       .then(setUser)
       .catch(() => setError('Não foi possível carregar o utilizador.'))
       .finally(() => setLoading(false));
@@ -36,8 +37,13 @@ const UserDetail = () => {
       fields={[
         { label: 'Nome', value: user.name },
         { label: 'Email', value: user.email },
-        { label: 'Perfil', value: user.role, render: v => <Badge label={v} /> },
+        {
+          label: 'Conta',
+          value: user.hasSignedIn ? 'Ativa' : 'Por reclamar',
+          render: (v) => <Badge label={v} />,
+        },
         { label: 'Criado em', value: user.createdAt, render: fmtDateTime },
+        { label: 'Último acesso', value: user.lastSeenAt, render: fmtDateTime },
       ]}
     />
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -10,11 +11,15 @@ const StatCard = ({ label, value, sub }) => (
 );
 
 const Dashboard = () => {
+  // Um cartão com um traço é uma pergunta sem resposta: não se sabe se não há
+  // dados ou se não há permissão. Só se pede o que o token permite, e só se
+  // mostra o que se pediu.
+  const { can } = useAuth();
   const [stats, setStats] = useState({
-    users: '—',
-    schedulings: '—',
-    services: '—',
-    payments: '—',
+    users: null,
+    schedulings: null,
+    services: null,
+    payments: null,
   });
   const [recentSchedulings, setRecentSchedulings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,17 +27,20 @@ const Dashboard = () => {
   useEffect(() => {
     const load = async () => {
       try {
+        const ask = (permission, path) =>
+          can(permission) ? api.get(path).catch(() => null) : Promise.resolve(null);
+
         const [users, schedulings, services, payments] = await Promise.all([
-          api.get('/users').catch(() => []),
-          api.get('/schedulings').catch(() => []),
-          api.get('/services').catch(() => []),
-          api.get('/payments').catch(() => []),
+          ask('users:read', '/users'),
+          ask('scheduling:read', '/schedulings'),
+          ask('services:read', '/services'),
+          ask('payments:read', '/payments'),
         ]);
         setStats({
-          users:       Array.isArray(users)       ? users.length       : '—',
-          schedulings: Array.isArray(schedulings) ? schedulings.length : '—',
-          services:    Array.isArray(services)    ? services.length    : '—',
-          payments:    Array.isArray(payments)    ? payments.length    : '—',
+          users:       Array.isArray(users)       ? users.length       : null,
+          schedulings: Array.isArray(schedulings) ? schedulings.length : null,
+          services:    Array.isArray(services)    ? services.length    : null,
+          payments:    Array.isArray(payments)    ? payments.length    : null,
         });
         if (Array.isArray(schedulings)) {
           setRecentSchedulings(schedulings.slice(0, 5));
@@ -42,7 +50,7 @@ const Dashboard = () => {
       }
     };
     load();
-  }, []);
+  }, [can]);
 
   return (
     <div className="p-8 max-w-5xl flex flex-col gap-8">
@@ -55,10 +63,18 @@ const Dashboard = () => {
 
       {/* Estatísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Utilizadores"  value={stats.users}       sub="registados"   />
-        <StatCard label="Agendamentos"  value={stats.schedulings} sub="total"        />
-        <StatCard label="Serviços"      value={stats.services}    sub="disponíveis"  />
-        <StatCard label="Pagamentos"    value={stats.payments}    sub="registados"   />
+        {stats.users !== null && (
+          <StatCard label="Utilizadores"  value={stats.users}       sub="registados"   />
+        )}
+        {stats.schedulings !== null && (
+          <StatCard label="Agendamentos"  value={stats.schedulings} sub="total"        />
+        )}
+        {stats.services !== null && (
+          <StatCard label="Serviços"      value={stats.services}    sub="disponíveis"  />
+        )}
+        {stats.payments !== null && (
+          <StatCard label="Pagamentos"    value={stats.payments}    sub="registados"   />
+        )}
       </div>
 
       {/* Agendamentos recentes */}

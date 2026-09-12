@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+import { useAuth } from '../../context/AuthContext';
 
 const EMPTY_FORM = { scheduledDate: '', serviceId: '', userId: '' };
 
@@ -22,6 +23,15 @@ const STATUS_STYLES = {
 
 const SchedulingList = () => {
   const navigate = useNavigate();
+  // Uma permissão por operação, com os mesmos nomes que a API exige em cada
+  // endpoint. É este espelho que torna o modelo legível: quem lê o ecrã percebe
+  // o que o papel permite sem abrir o Keeper.
+  const { can } = useAuth();
+  const canWrite = can('scheduling:write');
+  const canStatus = can('scheduling:status');
+  const canAssign = can('scheduling:assign');
+  const canDelete = can('scheduling:delete');
+  const canSeePeople = can('users:read');
   const [schedulings, setSchedulings] = useState([]);
   const [services, setServices] = useState([]);
   const [users, setUsers] = useState([]);
@@ -37,7 +47,7 @@ const SchedulingList = () => {
     const [s, sv, u] = await Promise.all([
       api.get('/schedulings').catch(() => []),
       api.get('/services').catch(() => []),
-      api.get('/users').catch(() => []),
+      canSeePeople ? api.get('/users').catch(() => []) : Promise.resolve([]),
     ]);
     setSchedulings(Array.isArray(s) ? s : []);
     setServices(Array.isArray(sv) ? sv : []);
@@ -123,7 +133,12 @@ const SchedulingList = () => {
     { key: 'scheduledDate', label: 'Data',       render: r => fmtDate(r.scheduledDate) },
     { key: 'userId',        label: 'Utilizador', render: r => getUserName(r.userId) },
     { key: 'serviceId',     label: 'Serviço',    render: r => getServiceName(r.serviceId) },
-    { key: 'status',        label: 'Estado',     render: r => (
+    { key: 'status',        label: 'Estado',     render: r => !canStatus ? (
+      <span className={`text-xs font-medium rounded-full border px-2 py-0.5
+        ${STATUS_STYLES[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+        {r.status}
+      </span>
+    ) : (
       <select
         value={r.status}
         onChange={e => handleStatusChange(r.id, e.target.value)}
@@ -134,7 +149,9 @@ const SchedulingList = () => {
         {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
     )},
-    { key: 'assignee', label: 'Responsável', render: r => (
+    { key: 'assignee', label: 'Responsável', render: r => !canAssign ? (
+      <span className="text-xs text-gray-500">{getUserName(r.assigneeId) }</span>
+    ) : (
       <select
         value={r.assigneeId ?? ''}
         onChange={e => handleAssigneeChange(r.id, e.target.value)}
@@ -150,8 +167,10 @@ const SchedulingList = () => {
     { key: 'actions', label: '', render: r => (
       <div className="flex gap-2">
         <Button size="sm" onClick={() => navigate(`/schedulings/${r.id}`)}>Ver</Button>
-        <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
-        <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
+        {canWrite && <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>}
+        {canDelete && (
+          <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
+        )}
       </div>
     )},
   ];
@@ -164,7 +183,9 @@ const SchedulingList = () => {
           <h1 className="text-2xl font-semibold text-gray-900">Agendamentos</h1>
           <p className="text-sm text-gray-400 mt-1">{schedulings.length} total</p>
         </div>
-        <Button variant="primary" onClick={openCreate}>+ Novo agendamento</Button>
+        {canWrite && (
+          <Button variant="primary" onClick={openCreate}>+ Novo agendamento</Button>
+        )}
       </div>
 
       {/* Filtros */}

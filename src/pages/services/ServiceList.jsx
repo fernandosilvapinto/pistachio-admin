@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
+import { useAuth } from '../../context/AuthContext';
 
 const EMPTY_FORM = { name: '', description: '', price: '', isActive: true, isFeatured: false };
 
@@ -13,6 +14,11 @@ const fmtEur = (n) => `€${Number(n ?? 0).toFixed(2)}`;
 
 const ServiceList = () => {
   const navigate = useNavigate();
+  // A mesma permissão que a API exige no POST, PUT e DELETE. Esconder o botão
+  // não protege nada — a API é que decide — mas evita oferecer uma ação que vai
+  // devolver 403.
+  const { can } = useAuth();
+  const canWrite = can('services:write');
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
@@ -74,8 +80,10 @@ const ServiceList = () => {
     { key: 'actions', label: '', render: r => (
       <div className="flex gap-2">
         <Button size="sm" onClick={() => navigate(`/services/${r.id}`)}>Ver</Button>
-        <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>
-        <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
+        {canWrite && <Button size="sm" onClick={() => openEdit(r)}>Editar</Button>}
+        {canWrite && (
+          <Button size="sm" variant="danger" onClick={() => handleDelete(r.id)}>Eliminar</Button>
+        )}
       </div>
     )},
   ];
@@ -88,7 +96,7 @@ const ServiceList = () => {
           <h1 className="text-2xl font-semibold text-gray-900">Serviços</h1>
           <p className="text-sm text-gray-400 mt-1">{services.length} serviços</p>
         </div>
-        <Button variant="primary" onClick={openCreate}>+ Novo serviço</Button>
+        {canWrite && <Button variant="primary" onClick={openCreate}>+ Novo serviço</Button>}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200">
