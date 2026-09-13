@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { userManager } from '../auth/userManager';
+import { userManager, signOutRedirect } from '../auth/userManager';
 
 const AuthContext = createContext(null);
 
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
 
   // Termina a sessão no Keeper, não só aqui. Limpar o estado local deixaria a
   // sessão do provider viva e o próximo login voltaria a entrar em silêncio.
-  const signOut = useCallback(() => userManager.signoutRedirect(), []);
+  const signOut = useCallback(() => signOutRedirect(), []);
 
   const can = useCallback(
     (permission) => me?.permissions?.includes(permission) ?? false,

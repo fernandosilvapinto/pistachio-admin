@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isSigningOut } from '../auth/userManager';
 
 /**
  * Já não decide entre "mostrar" e "mandar para o /login": não há /login. Decide
@@ -17,7 +18,9 @@ const PrivateRoute = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (status !== 'anonymous') return;
+    // Uma saída em curso também passa por `anonymous`. Reagir a isso seria
+    // mandar a pessoa entrar outra vez enquanto ela sai.
+    if (status !== 'anonymous' || isSigningOut()) return;
 
     // Um redirecionamento que falha deixa a página parada numa mensagem de
     // espera que nunca acaba. Uma promessa rejeitada e não apanhada é a forma

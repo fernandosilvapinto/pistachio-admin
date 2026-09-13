@@ -65,3 +65,24 @@ export const userManager = new UserManager({
   // cookies de terceiros, que os browsers estão a bloquear.
   monitorSession: false,
 });
+
+// signoutRedirect() remove o utilizador do armazenamento ANTES de navegar, e
+// isso dispara `userUnloaded`. Qualquer guarda que mande anónimos ao provider
+// reage nesse instante e inicia um redirecionamento de ENTRADA por cima do de
+// SAÍDA que já ia a caminho — o browser recebe duas navegações, a primeira
+// morre, e o botão parece não fazer nada.
+//
+// Esta bandeira existe para as guardas se manterem quietas enquanto uma saída
+// está em curso. É um módulo e não estado do React de propósito: tem de ficar
+// verdadeira no mesmo instante da chamada, sem esperar por uma renderização.
+let leaving = false;
+
+export const isSigningOut = () => leaving;
+
+export const signOutRedirect = () => {
+  leaving = true;
+  return userManager.signoutRedirect().catch((error) => {
+    leaving = false;
+    throw error;
+  });
+};
