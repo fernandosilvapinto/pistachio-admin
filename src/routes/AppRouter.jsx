@@ -16,7 +16,7 @@ import NotFound from '../pages/NotFound';
 const AppRouter = () => (
   <BrowserRouter>
     <Routes>
-      {/* O regresso do Keeper. É a única rota pública, e existe só para trocar
+      {/* O regresso do Anvil. É a única rota pública, e existe só para trocar
           o código de autorização por tokens. */}
       <Route path="/callback" element={<Callback />} />
 

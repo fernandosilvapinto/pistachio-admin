@@ -5,7 +5,7 @@ import { isSigningOut } from '../auth/userManager';
 
 /**
  * Já não decide entre "mostrar" e "mandar para o /login": não há /login. Decide
- * entre mostrar e delegar no Keeper.
+ * entre mostrar e delegar no Anvil.
  *
  * Isto é apenas conveniência para o utilizador. Nada aqui protege dados — a
  * proteção está na API, que exige um token válido e a permissão certa em cada
@@ -48,7 +48,7 @@ const PrivateRoute = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <p className="text-sm text-gray-400">
-        {status === 'loading' ? 'A verificar a sessão…' : 'A redirecionar para o Keeper…'}
+        {status === 'loading' ? 'A verificar a sessão…' : 'A redirecionar para o Anvil…'}
       </p>
     </div>
   );

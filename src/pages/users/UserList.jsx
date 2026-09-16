@@ -11,7 +11,7 @@ const fmtDateTime = (d) => (d ? new Date(d).toLocaleString('pt-PT') : '—');
  * Listagem apenas de leitura.
  *
  * Criar, renomear, desativar ou repor a password de uma pessoa são operações de
- * identidade e acontecem no Keeper, que é a fonte de verdade. O que esta tabela
+ * identidade e acontecem no Anvil, que é a fonte de verdade. O que esta tabela
  * mostra são as linhas locais que o domínio precisa para ter chaves
  * estrangeiras — um agendamento tem de apontar para alguém. Duplicar aqui a
  * gestão de pessoas era exatamente o que esta migração veio acabar.
@@ -68,7 +68,7 @@ const UserList = () => {
       </div>
 
       <p className="text-xs text-gray-400">
-        As contas são geridas no Keeper. &ldquo;Por reclamar&rdquo; é uma linha criada pelo
+        As contas são geridas no Anvil. &ldquo;Por reclamar&rdquo; é uma linha criada pelo
         domínio para alguém que ainda não se autenticou nenhuma vez — fica ligada
         à conta no primeiro início de sessão com o mesmo email verificado.
       </p>

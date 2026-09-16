@@ -26,7 +26,7 @@ const request = async (path, options = {}) => {
 
   // 401 e 403 dizem coisas diferentes e merecem respostas diferentes.
   // 401: a API não reconhece o token — expirou, ou não existe. Vale a pena
-  // voltar ao Keeper.
+  // voltar ao Anvil.
   if (response.status === 401) {
     await userManager.signinRedirect({
       state: { returnTo: window.location.pathname + window.location.search },

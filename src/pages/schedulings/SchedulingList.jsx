@@ -25,7 +25,7 @@ const SchedulingList = () => {
   const navigate = useNavigate();
   // Uma permissão por operação, com os mesmos nomes que a API exige em cada
   // endpoint. É este espelho que torna o modelo legível: quem lê o ecrã percebe
-  // o que o papel permite sem abrir o Keeper.
+  // o que o papel permite sem abrir o Anvil.
   const { can } = useAuth();
   const canWrite = can('scheduling:write');
   const canStatus = can('scheduling:status');

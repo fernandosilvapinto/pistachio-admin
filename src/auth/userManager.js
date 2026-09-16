@@ -1,11 +1,11 @@
 import { UserManager, WebStorageStateStore, InMemoryWebStorage } from 'oidc-client-ts';
 
-const authority = import.meta.env.VITE_KEEPER_AUTHORITY;
-const clientId = import.meta.env.VITE_KEEPER_CLIENT_ID;
+const authority = import.meta.env.VITE_ANVIL_AUTHORITY;
+const clientId = import.meta.env.VITE_ANVIL_CLIENT_ID;
 
 if (!authority || !clientId) {
   throw new Error(
-    'VITE_KEEPER_AUTHORITY e VITE_KEEPER_CLIENT_ID têm de estar definidos. Copia .env.example para .env.',
+    'VITE_ANVIL_AUTHORITY e VITE_ANVIL_CLIENT_ID têm de estar definidos. Copia .env.example para .env.',
   );
 }
 
@@ -27,7 +27,7 @@ if (!window.crypto?.subtle) {
  *
  * Nada aqui é específico do Keycloak: a biblioteca lê o documento de discovery
  * publicado em `<authority>/.well-known/openid-configuration` e descobre
- * sozinha os endpoints, os algoritmos e as chaves. Trocar o Keeper por outro
+ * sozinha os endpoints, os algoritmos e as chaves. Trocar o Anvil por outro
  * provider conforme é mudar uma variável de ambiente.
  */
 export const userManager = new UserManager({
@@ -45,7 +45,7 @@ export const userManager = new UserManager({
   post_logout_redirect_uri: `${window.location.origin}/`,
 
   // Os tokens vivem em memória JavaScript e mais lado nenhum. Recarregar a
-  // página perde-os de propósito: a sessão não é desta aplicação, é do Keeper,
+  // página perde-os de propósito: a sessão não é desta aplicação, é do Anvil,
   // e é lá que ela deve ser reconstruída. Guardá-los em localStorage tornaria
   // qualquer XSS — ou qualquer dependência npm comprometida — suficiente para
   // os exfiltrar.

@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api';
 export const AuthProvider = ({ children }) => {
   // loading  — ainda não sabemos se há sessão
   // authenticated — há um token válido em memória
-  // anonymous — não há, é preciso ir ao Keeper
+  // anonymous — não há, é preciso ir ao Anvil
   const [status, setStatus] = useState('loading');
   const [profile, setProfile] = useState(null);
   const [me, setMe] = useState(null);
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, [adopt, forget]);
 
-  // Sair daqui leva ao Keeper e volta. Se já houver sessão no Keeper, a volta é
+  // Sair daqui leva ao Anvil e volta. Se já houver sessão no Anvil, a volta é
   // imediata e sem formulário — é isso o single sign-on visto de dentro.
   const signIn = useCallback(
     (returnTo) =>
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     [],
   );
 
-  // Termina a sessão no Keeper, não só aqui. Limpar o estado local deixaria a
+  // Termina a sessão no Anvil, não só aqui. Limpar o estado local deixaria a
   // sessão do provider viva e o próximo login voltaria a entrar em silêncio.
   const signOut = useCallback(() => signOutRedirect(), []);
 
